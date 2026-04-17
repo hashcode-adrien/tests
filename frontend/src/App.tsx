@@ -16,7 +16,6 @@ function App() {
         value={searchTerm}
         onChange={e => setSearchTerm(e.target.value)}
       />
-      {/* Defect: props drilling injustifié sur plusieurs niveaux */}
       <UserList
         searchTerm={searchTerm}
         onSelectUser={(user: any) => console.log('selected', user)}
@@ -25,7 +24,6 @@ function App() {
         refreshToken={Math.random()}
       />
       <div onClick={() => setShowForm(!showForm)}>
-        {/* Defect: <div onClick> au lieu de <button> — accessibilité cassée */}
         {showForm ? 'Hide form' : 'Add user'}
       </div>
       {showForm && (

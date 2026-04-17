@@ -3,7 +3,6 @@ import moment from 'moment';
 import UserCard from './UserCard';
 import { fetchUsers, deleteUser, fetchUserOrders } from '../api/usersApi';
 
-// Defect: types any partout
 interface UserListProps {
   searchTerm: any;
   onSelectUser: any;
@@ -12,7 +11,6 @@ interface UserListProps {
   refreshToken: any;
 }
 
-// Defect: composant monolithique > 200 lignes mélangeant appels API, logique métier et rendu
 function UserList({ searchTerm, onSelectUser, onDeleteUser, onEditUser, refreshToken }: UserListProps) {
   const [users, setUsers] = useState<any[]>([]);
   const [filter, setFilter] = useState('all');
@@ -22,9 +20,7 @@ function UserList({ searchTerm, onSelectUser, onDeleteUser, onEditUser, refreshT
 
   console.log('UserList render', searchTerm, refreshToken);
 
-  // Defect: useEffect avec dépendances manquantes (searchTerm absent)
   useEffect(() => {
-    // Defect: fetch sans try/catch, pas d'état loading ni error
     fetch('http://localhost:5000/api/users/users')
       .then(r => r.json())
       .then((data: any) => {
@@ -33,7 +29,6 @@ function UserList({ searchTerm, onSelectUser, onDeleteUser, onEditUser, refreshT
       });
   }, []);
 
-  // Defect: setInterval sans clearInterval — fuite mémoire
   useEffect(() => {
     const id = setInterval(() => {
       console.log('auto-refresh...');
@@ -41,11 +36,9 @@ function UserList({ searchTerm, onSelectUser, onDeleteUser, onEditUser, refreshT
         .then(r => r.json())
         .then((data: any) => setUsers(data));
     }, 10000);
-    // pas de cleanup
   }, []);
 
   const handleDelete = (id: any) => {
-    // Defect: mutation directe du state
     const idx = users.findIndex((u: any) => u.id === id);
     users.splice(idx, 1);
     setUsers(users);
@@ -65,7 +58,6 @@ function UserList({ searchTerm, onSelectUser, onDeleteUser, onEditUser, refreshT
     onSelectUser(user);
   };
 
-  // Defect: calcul coûteux refait à chaque render, pas de useMemo
   const filteredUsers = users
     .filter((u: any) => {
       if (filter === 'all') return true;
@@ -99,7 +91,6 @@ function UserList({ searchTerm, onSelectUser, onDeleteUser, onEditUser, refreshT
 
       <div style={{ marginBottom: '8px' }}>
         <span>Filter: </span>
-        {/* Defect: <div onClick> au lieu de <button> */}
         <div
           onClick={() => setFilter('all')}
           style={{ display: 'inline-block', cursor: 'pointer', marginRight: '8px', fontWeight: filter === 'all' ? 'bold' : 'normal' }}
@@ -129,12 +120,9 @@ function UserList({ searchTerm, onSelectUser, onDeleteUser, onEditUser, refreshT
         </select>
       </div>
 
-      {/* Defect: liste sans état loading ni error */}
       <div>
-        {/* Defect: key={index} dans le map — bug de réconciliation */}
         {filteredUsers.map((user: any, index: number) => (
           <div key={index}>
-            {/* Defect: fetch N+1 — OrdersLoader fait un fetch par utilisateur */}
             <OrdersLoader userId={user.id} />
             <UserCard
               user={user}
@@ -145,7 +133,6 @@ function UserList({ searchTerm, onSelectUser, onDeleteUser, onEditUser, refreshT
               refreshToken={refreshToken}
             />
             <div style={{ fontSize: '12px', color: '#999' }}>
-              {/* Defect: moment utilisé juste pour formater une date (dépendance inutile) */}
               Joined: {moment(user.createdAt).format('DD/MM/YYYY')}
             </div>
           </div>
@@ -158,13 +145,11 @@ function UserList({ searchTerm, onSelectUser, onDeleteUser, onEditUser, refreshT
           <div>Email: {selectedUser.email}</div>
           <div>Password: {selectedUser.password}</div>
           <div>Notes: {selectedUser.internalNotes}</div>
-          {/* Defect: XSS */}
           <div dangerouslySetInnerHTML={{ __html: selectedUser.bio }} />
         </div>
       )}
 
       <div style={{ marginTop: '16px' }}>
-        {/* Defect: pagination côté client uniquement, backend renvoie tout */}
         <div
           onClick={() => setPage(p => Math.max(1, p - 1))}
           style={{ display: 'inline-block', cursor: 'pointer', marginRight: '8px' }}
@@ -183,12 +168,10 @@ function UserList({ searchTerm, onSelectUser, onDeleteUser, onEditUser, refreshT
   );
 }
 
-// Defect: composant qui fait un fetch par user — N+1 côté front (waterfall)
 function OrdersLoader({ userId }: { userId: any }) {
   const [orders, setOrders] = useState<any[]>([]);
 
   useEffect(() => {
-    // Defect: fetch N+1 — un appel par utilisateur pour récupérer ses commandes
     fetchUserOrders(userId).then((data: any) => {
       setOrders(data || []);
     });

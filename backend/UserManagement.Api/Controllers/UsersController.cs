@@ -5,9 +5,7 @@ using UserManagement.Api.Services;
 
 namespace UserManagement.Api.Controllers
 {
-    // Defect: [AllowAnonymous] sur tout le contrôleur (endpoints sensibles non protégés)
     [AllowAnonymous]
-    // Defect: routing incohérent — mélange [Route] et [HttpGet("users")]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -19,13 +17,11 @@ namespace UserManagement.Api.Controllers
             _service = service;
         }
 
-        // Defect: appel bloquant (.Result) au lieu de await — risque de deadlock
         [HttpGet("users")]
         public IActionResult GetAll()
         {
             var users = _service.GetAllAsync().Result;
 
-            // Defect: renvoie directement l'entité User (Password, InternalNotes, Email inclus)
             return Ok(users);
         }
 
@@ -35,7 +31,6 @@ namespace UserManagement.Api.Controllers
             var user = await _service.GetByIdAsync(id);
             if (user == null) return NotFound();
 
-            // Defect: exposition de l'entité de domaine complète
             return Ok(user);
         }
 
@@ -49,12 +44,10 @@ namespace UserManagement.Api.Controllers
         [HttpPost]
         public IActionResult Create([FromBody] CreateUserRequest request)
         {
-            // Defect: pas de vérification de ModelState.IsValid
             _service.CreateUser(request);
             return Ok(new { message = "User created" });
         }
 
-        // Defect: DELETE exposé via HttpGet — suppression par simple appel GET (CSRF trivial)
         [HttpGet("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {

@@ -1,6 +1,5 @@
 namespace UserManagement.Api.Models
 {
-    // Defect: aucune DataAnnotation ([Required], [EmailAddress], [StringLength])
     public class CreateUserRequest
     {
         public string Name { get; set; } = string.Empty;

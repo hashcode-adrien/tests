@@ -16,10 +16,8 @@ namespace UserManagement.Api.Services
 
         public async Task<List<User>> GetAllAsync()
         {
-            // Defect: pas de pagination (toute la table)
             var users = await _context.Users.ToListAsync();
 
-            // Defect: N+1 — chargement des Orders dans une boucle au lieu de Include()
             foreach (var u in users)
             {
                 u.Orders = _context.Orders.Where(o => o.UserId == u.Id).ToList();
@@ -35,7 +33,6 @@ namespace UserManagement.Api.Services
 
         public async Task<List<User>> GetByNameAsync(string name)
         {
-            // Defect: injection SQL — concaténation directe de la variable name
             var users = _context.Users
                 .FromSqlRaw("SELECT * FROM Users WHERE Name = '" + name + "'")
                 .ToList();
@@ -45,13 +42,10 @@ namespace UserManagement.Api.Services
             return await Task.FromResult(users);
         }
 
-        // Defect: async void au lieu de async Task
         public async void CreateUser(CreateUserRequest request)
         {
-            // Defect: exceptions avalées silencieusement
             try
             {
-                // Defect: SqlConnection instancié sans using, jamais disposé
                 var conn = new SqlConnection("Server=localhost;Database=UserManagementDb;User Id=sa;Password=SuperSecretKey123;TrustServerCertificate=True;");
                 conn.Open();
 
@@ -59,7 +53,6 @@ namespace UserManagement.Api.Services
                 {
                     Name = request.Name,
                     Email = request.Email,
-                    // Defect: mot de passe stocké en clair, sans hash
                     Password = request.Password,
                     Bio = request.Bio,
                     InternalNotes = request.InternalNotes,
@@ -73,7 +66,6 @@ namespace UserManagement.Api.Services
             }
             catch (Exception)
             {
-                // Defect: exception avalée silencieusement
             }
         }
 

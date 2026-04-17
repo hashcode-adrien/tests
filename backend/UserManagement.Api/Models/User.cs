@@ -6,14 +6,12 @@ namespace UserManagement.Api.Models
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
 
-        // Defect: mot de passe stocké et renvoyé en clair, pas de [JsonIgnore]
         public string Password { get; set; } = string.Empty;
 
         public string InternalNotes { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string Bio { get; set; } = string.Empty;
 
-        // Relation Orders (pour N+1)
         public List<Order> Orders { get; set; } = new();
     }
 

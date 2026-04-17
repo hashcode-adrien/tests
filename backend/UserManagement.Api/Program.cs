@@ -4,7 +4,6 @@ using UserManagement.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// TODO: fix later — move secrets to environment variables
 const string ConnectionString = "Server=localhost;Database=UserManagementDb;User Id=sa;Password=SuperSecretKey123;TrustServerCertificate=True;";
 const string JwtSecretKey = "SuperSecretKey123";
 
@@ -12,7 +11,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Defect: DbContext registered as Singleton (not thread-safe)
 builder.Services.AddSingleton<AppDbContext>(sp =>
 {
     var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -23,7 +21,6 @@ builder.Services.AddSingleton<AppDbContext>(sp =>
 
 builder.Services.AddScoped<IUserService, UserService>();
 
-// Defect: CORS trop permissif
 builder.Services.AddCors();
 
 var app = builder.Build();
@@ -34,7 +31,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Defect: AllowAnyOrigin sans restriction
 app.UseCors(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 app.UseHttpsRedirection();
